@@ -12,9 +12,3 @@ public struct Tiktoken {
         nil
     }
 }
-
-
-public protocol Encoding {
-    func encode(value: String) -> [Int]
-    func decode(value: [Int]) -> String
-}
