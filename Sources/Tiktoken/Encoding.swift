@@ -23,12 +23,31 @@ import Foundation
 
 public class Encoding {
     
-    private let name: String
-    private let patStr: String
+//mergeable_ranks: dict[bytes, int],
+//special_tokens: dict[str, int],
+//explicit_n_vocab: Optional[int] = None,
     
-    init(name: String, patStr: String) {
+    private let name: String
+    private let patStr: String // Regex
+    private let mergeableRanks: [Int: Int]
+    private let specialTokens: [String: Int]
+    
+    private let maxValueToken: Int
+    
+    init(name: String, patStr: String, mergeableRanks: [Int: Int], specialTokens: [String: Int], explicitNVocab: [Int]? = nil) {
         self.name = name
         self.patStr = patStr
+        self.mergeableRanks = mergeableRanks
+        self.specialTokens = specialTokens
+        self.maxValueToken = max(mergeableRanks.values.max() ?? 0, specialTokens.values.max() ?? 0)
+  
+        // Assert validation
+        
+//        if explicit_n_vocab:
+//            assert len(mergeable_ranks) + len(special_tokens) == explicit_n_vocab
+//            assert self.max_token_value == explicit_n_vocab - 1
+        
+        
     }
     
     func encode(value: String) -> [Int] {
