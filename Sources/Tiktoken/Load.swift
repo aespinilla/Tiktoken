@@ -14,12 +14,11 @@ enum Load {
         return FileDecoder().decode(data)
     }
     
-    static func dataGymToMergeableBpeRanks(vocabBpeFile: String, encoderJsonFile: String) async -> [Data: Int] {
+    static func dataGymToMergeableBpeRanks(vocabBpeFile: String, encoderJsonFile: String) async -> [[UInt8]: Int] {
         var rankToIntByte = (0..<exponentialPow)
             .filter({ Character($0).isPrintable && !Character($0).isWhitespace })
-//            .filter({ Character($0).isPrintable && !String(Character($0)).trimmingCharacters(in: .whitespaces).isEmpty })
         
-        var dataGymByteToByte = toDictionary(array: rankToIntByte)
+        var dataGymByteToByte: [Character: Int] = toDictionary(array: rankToIntByte)
         
         var n = 0
         (0..<exponentialPow)
@@ -31,21 +30,43 @@ enum Load {
                 }
             })
         
-        let bpeMerges = await getVocab()
-        var bpeRanks: [Data: Int] = .init()
+        let bpeMerges: [(String, String)] = await getVocab()
+        var bpeRanks: [[UInt8]: Int] = .init()
         rankToIntByte.enumerated().forEach({
-            bpeRanks[Data(Character($0.element).utf8)] = $0.offset
+            if [101, 119, 100].contains($0.offset) {
+                print("Stop")
+            }
+            bpeRanks[Array(Character($0.element).utf16).map({ UInt8($0) })] = $0.offset
         })
         
         n = bpeRanks.count
         bpeMerges.forEach({
-            let first = stringToArray(value: String($0.0), dict: dataGymByteToByte)
-            let second = stringToArray(value: String($0.1), dict: dataGymByteToByte)
+            
+            if $0.0 == "Ã", $0.1 == "¨" {
+                print("Stop")
+            }
+            
+            if $0.0 == "Â", $0.1 == "¨" {
+                print("Stop")
+            }
+            
+            if n == 37102 {
+                print("Stop")
+            }
+            
+            let first = stringToArray(value: $0.0, dict: dataGymByteToByte)
+            let second = stringToArray(value: $0.1, dict: dataGymByteToByte)
             let arrayInt = (first + second).map({ UInt8($0) })
-            let data = Data(arrayInt)
-            bpeRanks[data] = n
+            
+//            let data = Data(arrayInt)
+//            bpeRanks[data] = n
+            
+//            let arrayInt = stringToArray(value: $0.0 + $0.1, dict: dataGymByteToByte).map({ UInt8($0) })
+            bpeRanks[arrayInt] = n
             n += 1
         })
+        
+        // TODO: Validate bpe ranks with json encoder file
         
         return bpeRanks
     }
@@ -57,7 +78,23 @@ private extension Load {
     }
     
     static func stringToArray(value: String, dict: [Character: Int]) -> [Int] {
-        value.compactMap({ dict[$0] })
+//        if value == "Â" {
+//            print("Stop")
+//        }
+        return value.compactMap({ dict[$0] })
+        
+//        return value.utf8.compactMap({ dict[Character(Int($0))] })
+        
+//        return Array(value.utf8).compactMap({
+//            let code = Int($0)
+//            let char = Character(code)
+//            return dict[char]
+//        })
+        
+//        value.compactMap({
+//            $0.utf8.compactMap({ dict[Character(Int($0))] })
+//        })
+//        .flatMap({ $0 })
     }
     
     static func toDictionary(array: [Int]) -> [Character: Int] {
