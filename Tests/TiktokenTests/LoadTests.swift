@@ -13,4 +13,9 @@ final class LoadTests: XCTestCase {
         let result = try? await Load.dataGymToMergeableBpeRanks(vocabBpeFile: "", encoderJsonFile: "")
         XCTAssertNotNil(result)
     }
+    
+    func testLoadBpe() async throws {
+        let result = try? await Load.loadTiktokenBpe(url: "https://openaipublic.blob.core.windows.net/encodings/r50k_base.tiktoken")
+        XCTAssertNotNil(result)
+    }
 }

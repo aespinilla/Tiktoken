@@ -10,7 +10,7 @@ import Foundation
 class CoreBPE {
     private let encoder: [[UInt8]: Int]
     private let specialTokensEncoder: [String: Int]
-    private let decoder: [Int: Data]
+    private let decoder: [Int: [UInt8]]
     private let specialTokensDecoder: [Int: Data]
     private let regexTls: [NSRegularExpression]
     private let specialRegexTls: [NSRegularExpression]
@@ -18,7 +18,7 @@ class CoreBPE {
     
     init(encoder: [[UInt8] : Int] = .init(),
          specialTokensEncoder: [String : Int] = .init(),
-         decoder: [Int : Data] = .init(),
+         decoder: [Int : [UInt8]] = .init(),
          specialTokensDecoder: [Int : Data] = .init(),
          regexTls: [NSRegularExpression] = .init(),
          specialRegexTls: [NSRegularExpression] = .init(),
@@ -35,13 +35,8 @@ class CoreBPE {
     func encodeOrdinaryNative(text: String) -> [Int] {
         let regex = regexTls.first!
         var ret = [Int]()
-//        var newEncoder = [[UInt8]: Int]()
-//        encoder.forEach({
-//            newEncoder[[UInt8]($0.key)] = $0.value
-//        })
         for mat in regex.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
             if let range = Range(mat.range, in: text) {
-//            if let piece = Range(mat.range, in: text).map({ String(text[$0]) })?.data(using: .utf8) {
                 let piece = Array(text[range].utf8)
                 if let token = encoder[piece] {
                     ret.append(token)
@@ -53,6 +48,15 @@ class CoreBPE {
         }
         return ret
     }
+    
+    func decodeNative(tokens: [Int]) -> String {
+        let data = tokens.reduce(into: Data(), {
+            if let tokenBytes = decoder[$1] {
+                $0.append(contentsOf: tokenBytes)
+            }
+        })
+        return String(data: data, encoding: .utf8) ?? ""
+    }
 }
 
 private extension CoreBPE {
@@ -63,37 +67,6 @@ private extension CoreBPE {
 //    func _get_tl_special_regex() -> NSRegularExpression {
 //        specialRegexTls[hash_current_thread() % MAX_NUM_THREADS]
 //    }
-    
-    func decodeNative(tokens: [Int]) -> Data {
-        var data = Data()
-        data.reserveCapacity(tokens.count * 2)
-
-        for token in tokens {
-            guard let tokenBytes = decoder[token] ?? specialTokensDecoder[token] else { break }
-            data.append(tokenBytes)
-        }
-        return data
-    }
-    
-//    func encodeOrdinaryNative(text: String) -> [Int] {
-//        let regex = regexTls.first!
-//        var ret = [Int]()
-//        var newEncoder = [[UInt8]: Int]()
-//        encoder.forEach({
-//            newEncoder[[UInt8]($0.key)] = $0.value
-//        })
-//        for mat in regex.matches(in: text, range: NSRange(text.startIndex..., in: text)) {
-//            let piece = Range(mat.range, in: text).map({ String(text[$0]) })?.data(using: .utf8) ?? Data() // WARNING
-//            if let token = encoder[piece] {
-//                ret.append(token)
-//                continue
-//            }
-//
-//            ret.append(contentsOf: bytePairEncode([UInt8](piece), newEncoder))
-//        }
-//        return ret
-//    }
-    
 //    func encodeNative(text: String, allowedSpecial: Set<String>) -> ([Int], Int) {
 //        let specialRegex = specialRegexTls.first!
 //        let regex = regexTls.first!
@@ -331,22 +304,8 @@ private extension CoreBPE {
             }
         }
         
-        var out = [T]()
-        out.reserveCapacity(parts.count - 1)
-//        for i in 0..<(parts.count - 1) {
-//            out.append(completion(parts[i].0..<parts[i + 1].0))
-//        }
-        
         // TODO: Use ranks
-        parts.prevCurrent({
-//            if let result = completion($0.0..<$1.0) {
-//                out.append(result)
-//            }
-            
-            let result = completion($0.0..<$1.0)
-            out.append(result)
-        })
-        return out
+        return parts.prevCurrent({ completion($0.0..<$1.0) })
     }
     
     func bytePairEncode(_ piece: [UInt8], _ ranks: [[UInt8]: Int]) -> [Int] {
@@ -355,7 +314,6 @@ private extension CoreBPE {
         }
         return bytePairMerge(piece, ranks, completion: { p in
             let chunk = Array(piece[p])
-            let characters = chunk.map({ Array(Character(Int($0)).utf8) }).flatMap({ $0 })
             return ranks[chunk] ?? 0
         })
     }
@@ -369,11 +327,11 @@ private extension CoreBPE {
 }
 
 extension Array {
-    func prevCurrent(_ body: (Element, Element) -> Void) {
-        enumerated().forEach({ index, element in
-            guard index > 0 else { return }
+    func prevCurrent<T>(_ body: (Element, Element) throws -> T) rethrows -> [T] {
+        enumerated().compactMap({ index, element in
+            guard index > 0 else { return nil }
             let prev = self[index-1]
-            body(prev, element)
+            return try? body(prev, element)
         })
     }
 }
