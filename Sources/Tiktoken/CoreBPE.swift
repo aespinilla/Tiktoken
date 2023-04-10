@@ -241,7 +241,7 @@ private extension CoreBPE {
 // MARK: - Merges
 
 private extension CoreBPE {
-    func bytePairMerge<T>(_ piece: [UInt8], _ ranks: [[UInt8]: Int ], completion: (Range<Int>) -> T) -> [T] {
+    func bytePairMerge<T>(_ piece: [UInt8], _ ranks: [[UInt8]: Int], completion: (Range<Int>) -> T) -> [T] {
         // This is a vector of (start, rank).
         // The rank is of the byte pair starting at position start.
         // The rank of the last item in the vector is not a valid value.
@@ -324,14 +324,4 @@ private extension CoreBPE {
 //        }
 //        return bytePairMerge(piece, ranks, completion: { Array(piece[$0]) })
 //    }
-}
-
-extension Array {
-    func prevCurrent<T>(_ body: (Element, Element) throws -> T) rethrows -> [T] {
-        enumerated().compactMap({ index, element in
-            guard index > 0 else { return nil }
-            let prev = self[index-1]
-            return try? body(prev, element)
-        })
-    }
 }
