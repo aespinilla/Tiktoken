@@ -8,7 +8,5 @@
 import Foundation
 
 extension String {
-    var uInt8: [UInt8] {
-        utf16.map({ UInt8($0) })
-    }
+    var uInt8: [UInt8] { utf16.map({ UInt8($0) }) }
 }

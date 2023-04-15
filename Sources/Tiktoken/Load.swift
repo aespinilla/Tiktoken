@@ -16,9 +16,9 @@ enum Load {
         case cl100k_base = "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
     }
     
-    static func loadTiktokenBpe(url: String) async -> [[UInt8]: Int] {
+    static func loadTiktokenBpe(url: String, decoder: FileDecoder = FileDecoder()) async -> [[UInt8]: Int] {
         guard let data = try? await Load.fetch(stringUrl: url) else { return [:] }
-        return FileDecoder().decode(data)
+        return decoder.decode(data)
     }
     
     static func dataGymToMergeableBpeRanks(vocabBpeFile: String, encoderJsonFile: String? = nil) async -> [[UInt8]: Int] {
@@ -92,7 +92,9 @@ private extension Load {
             .compactMap({
                 guard !$0.starts(with: "#version") else { return nil }
                 let line = String($0).splitWhiteSpaces
-                guard let first = line.first, let last = line.last else { return nil }
+                guard let first = line.first,
+                        let last = line.last
+                else { return nil }
                 return (first, last)
             })
     }

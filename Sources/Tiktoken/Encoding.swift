@@ -27,16 +27,23 @@ public class Encoding {
 //special_tokens: dict[str, int],
 //explicit_n_vocab: Optional[int] = None,
     
-    private let name: String
-    private let patStr: String // Regex
-    private let mergeableRanks: [Int: Int]
-    private let specialTokens: [String: Int]
+//    let name: String
+//    let explicitNVocab: Int?
+//    let pattern: String
+//    let mergeableRanks: [[UInt8]: Int]
+//    let specialTokens: [String: Int] // TODO: Map to [UInt8]
     
+    private let name: String
+    private let regex: NSRegularExpression // Regex
+    private let mergeableRanks: [[UInt8]: Int]
+    private let specialTokens: [String: Int]
     private let maxValueToken: Int
     
-    init(name: String, patStr: String, mergeableRanks: [Int: Int], specialTokens: [String: Int], explicitNVocab: [Int]? = nil) {
+    private let coreBpe: CoreBPE
+    
+    init(name: String, patStr: String, mergeableRanks: [[UInt8]: Int], specialTokens: [String: Int], explicitNVocab: Int? = nil) throws {
         self.name = name
-        self.patStr = patStr
+        self.regex = try NSRegularExpression(pattern: patStr)
         self.mergeableRanks = mergeableRanks
         self.specialTokens = specialTokens
         self.maxValueToken = max(mergeableRanks.values.max() ?? 0, specialTokens.values.max() ?? 0)
@@ -47,7 +54,8 @@ public class Encoding {
 //            assert len(mergeable_ranks) + len(special_tokens) == explicit_n_vocab
 //            assert self.max_token_value == explicit_n_vocab - 1
         
-        
+        let decoder = mergeableRanks.reduce(into: [:], { $0[$1.value] = $1.key })
+        self.coreBpe = .init(encoder: mergeableRanks, decoder: decoder, regexTls: [regex])
     }
     
     func encode(value: String) -> [Int] {
