@@ -31,5 +31,6 @@ print(decoded)
 - Custom vocab
 - Implements cache for loaded encoding
 - Add/Improve documentation
+- Add support for combine
 - Optimization performance
 - More testing

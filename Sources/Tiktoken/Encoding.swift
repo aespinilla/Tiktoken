@@ -58,11 +58,11 @@ public class Encoding {
         self.coreBpe = .init(encoder: mergeableRanks, decoder: decoder, regexTls: [regex])
     }
     
-    func encode(value: String) -> [Int] {
+    public func encode(value: String) -> [Int] {
         coreBpe.encodeOrdinaryNative(text: value)
     }
     
-    func decode(value: [Int]) -> String {
+    public func decode(value: [Int]) -> String {
         coreBpe.decodeNative(tokens: value)
     }
 }
