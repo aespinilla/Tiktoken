@@ -29,5 +29,7 @@ print(decoded)
 - Encode unstable native
 - Multithread
 - Custom vocab
+- Implements cache for loaded encoding
+- Add/Improve documentation
 - Optimization performance
 - More testing

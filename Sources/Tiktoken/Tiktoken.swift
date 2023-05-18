@@ -14,17 +14,17 @@ public struct Tiktoken {
         return encoding
     }
     
-    public func getEncoding(for vocab: Vocab) -> Encoding? {
-        return nil
-    }
-    
-    public func register() {
-        // TODO: Register model and Encoding
-    }
-    
-    public func clear() {
-        // TODO: Clear all cached encoding
-    }
+//    public func getEncoding(for vocab: Vocab) -> Encoding? {
+//        return nil
+//    }
+//    
+//    public func register() {
+//        // TODO: Register model and Encoding
+//    }
+//    
+//    public func clear() {
+//        // TODO: Clear all cached encoding
+//    }
 }
 
 private extension Tiktoken {
