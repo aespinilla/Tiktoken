@@ -8,9 +8,10 @@
 import Foundation
 
 enum Model {
-    static func getEncoding(_ name: String) -> String? {
-        if let encodingName = MODEL_TO_ENCODING[name] {
-            return encodingName
+    static func getEncoding(_ name: String) -> Vocab? {
+        if let encodingName = MODEL_TO_ENCODING[name],
+           let vocab = Vocab.all.first(where: { $0.name == encodingName }) {
+            return vocab
         }
         return findPrefix(with: name)
     }
@@ -63,12 +64,15 @@ private extension Model {
         "code-search-ada-code-001": "r50k_base",
         // open source
         "gpt2": "gpt2",
+        "gpt3": "gpt3",
     ]
     
-    static func findPrefix(with name: String) -> String? {
-        guard let key = Model.MODEL_PREFIX_TO_ENCODING.keys.first(where: { name.starts(with: $0) }) else {
+    static func findPrefix(with name: String) -> Vocab? {
+        guard let key = Model.MODEL_PREFIX_TO_ENCODING.keys.first(where: { name.starts(with: $0) }),
+              let name = Model.MODEL_PREFIX_TO_ENCODING[key] ,
+              let vocab = Vocab.all.first(where: { $0.name == name }) else {
             return nil
         }
-        return Model.MODEL_PREFIX_TO_ENCODING[key]
+        return vocab
     }
 }
