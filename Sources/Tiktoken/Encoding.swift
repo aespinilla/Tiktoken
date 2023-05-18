@@ -41,9 +41,9 @@ public class Encoding {
     
     private let coreBpe: CoreBPE
     
-    init(name: String, patStr: String, mergeableRanks: [[UInt8]: Int], specialTokens: [String: Int], explicitNVocab: Int? = nil) throws {
+    init(name: String, regex: NSRegularExpression, mergeableRanks: [[UInt8]: Int], specialTokens: [String: Int], explicitNVocab: Int? = nil) {
         self.name = name
-        self.regex = try NSRegularExpression(pattern: patStr)
+        self.regex = regex
         self.mergeableRanks = mergeableRanks
         self.specialTokens = specialTokens
         self.maxValueToken = max(mergeableRanks.values.max() ?? 0, specialTokens.values.max() ?? 0)
@@ -54,15 +54,15 @@ public class Encoding {
 //            assert len(mergeable_ranks) + len(special_tokens) == explicit_n_vocab
 //            assert self.max_token_value == explicit_n_vocab - 1
         
-        let decoder = mergeableRanks.reduce(into: [:], { $0[$1.value] = $1.key })
+        let decoder = mergeableRanks.inverted
         self.coreBpe = .init(encoder: mergeableRanks, decoder: decoder, regexTls: [regex])
     }
     
     func encode(value: String) -> [Int] {
-        return .init()
+        coreBpe.encodeOrdinaryNative(text: value)
     }
     
     func decode(value: [Int]) -> String {
-        .init()
+        coreBpe.decodeNative(tokens: value)
     }
 }

@@ -247,7 +247,7 @@ private extension CoreBPE {
         // The rank of the last item in the vector is not a valid value.
         var parts = (0..<piece.count + 1).map { ($0, Int.max) }
         
-        let getRank: ([ (Int, Int) ], Int, Int) -> Int? = { parts, startIdx, skip in
+        let getRank: ([(Int, Int)], Int, Int) -> Int? = { parts, startIdx, skip in
             let calculatedIndex = startIdx + skip + 2
             if calculatedIndex < parts.count {
                 let range = parts[startIdx].0..<parts[calculatedIndex].0

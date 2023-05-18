@@ -8,14 +8,6 @@
 import Foundation
 
 enum Load {
-    enum Model: String {
-        case gpt2 = "https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/vocab.bpe"
-        case gpt2Enc = "https://openaipublic.blob.core.windows.net/gpt-2/encodings/main/encoder.json"
-        case r50k_base = "https://openaipublic.blob.core.windows.net/encodings/r50k_base.tiktoken"
-        case p50k_base, p50k_edit = "https://openaipublic.blob.core.windows.net/encodings/p50k_base.tiktoken"
-        case cl100k_base = "https://openaipublic.blob.core.windows.net/encodings/cl100k_base.tiktoken"
-    }
-    
     static func loadTiktokenBpe(url: String, decoder: FileDecoder = FileDecoder()) async -> [[UInt8]: Int] {
         guard let data = try? await Load.fetch(stringUrl: url) else { return [:] }
         return decoder.decode(data)
@@ -52,13 +44,13 @@ enum Load {
         })
         
         // TODO: Validate bpe ranks with json encoder file
-//        assert(bpeRanks.count == 50256, "Must be expected encoder count")
-//        if let validationUrl = encoderJsonFile {
-//            let validationEncoder = await getDecoder(url: validationUrl)
-//            assert(bpeRanks.count == 50256, "Must be expected encoder count")
-//            assert(bpeRanks.count == validationEncoder.count -1, "Must be expected encoder count")
-//            assert(bpeRanks == validationEncoder, "Must be expected same encoder")
-//        }
+        //        assert(bpeRanks.count == 50256, "Must be expected encoder count")
+        //        if let validationUrl = encoderJsonFile {
+        //            let validationEncoder = await getDecoder(url: validationUrl)
+        //            assert(bpeRanks.count == 50256, "Must be expected encoder count")
+        //            assert(bpeRanks.count == validationEncoder.count -1, "Must be expected encoder count")
+        //            assert(bpeRanks == validationEncoder, "Must be expected same encoder")
+        //        }
         
         return bpeRanks
     }
@@ -93,7 +85,7 @@ private extension Load {
                 guard !$0.starts(with: "#version") else { return nil }
                 let line = String($0).splitWhiteSpaces
                 guard let first = line.first,
-                        let last = line.last
+                      let last = line.last
                 else { return nil }
                 return (first, last)
             })
@@ -103,7 +95,6 @@ private extension Load {
         guard let data = try? await fetch(stringUrl: url),
               let decoded = try? JSONDecoder().decode([String: Int].self, from: data)
         else { return [:] }
-        
         return decoded
     }
 }
