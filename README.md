@@ -16,7 +16,7 @@ Stars are welcome 😊.
 ## Usage
 
 ```swift
-let encoder = Tiktoken.shared.getEncoding("gpt-4")
+let encoder = try await Tiktoken.shared.getEncoding("gpt-4")
 let encoded = encoder?.encode(value: "這個算法真的太棒了")
 print(encoded)
 let decoded = encoder?.decode(value: encoded)
