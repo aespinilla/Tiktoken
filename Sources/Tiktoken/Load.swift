@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import CryptoKit
 
 enum Load {
     static func loadTiktokenBpe(url: String, decoder: FileDecoder = FileDecoder()) async -> [[UInt8]: Int] {
@@ -56,7 +57,18 @@ enum Load {
     }
 }
 
+private extension String {
+    var sha256: String {
+        let data = Data(self.utf8)
+        let hashed = SHA256.hash(data: data)
+        return hashed.compactMap { String(format: "%02x", $0) }.joined()
+    }
+}
+
 private extension Load {
+
+    private static let cacheDirectoryURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+
     static var exponentialPow: Int {
         Int(pow(2.0, 8))
     }
@@ -69,10 +81,30 @@ private extension Load {
         array.reduce(into: [:], { $0[Character($1)] = $1 })
     }
     
+    // Fetch data
     static func fetch(stringUrl: String) async throws -> Data? {
-        guard let url = URL(string: stringUrl) else { return nil }
-        let result = try await URLSession.shared.data(from: url)
-        return result.0
+        let urlHash = stringUrl.sha256
+
+        // Create a URL for cache file
+        let cacheFileURL = cacheDirectoryURL.appendingPathComponent("\(urlHash)")
+
+        // Check if the data exists in cache
+        if FileManager.default.fileExists(atPath: cacheFileURL.path) {
+            let data = try? Data(contentsOf: cacheFileURL)
+            return data
+        } else {
+            guard let url = URL(string: stringUrl) else { return nil }
+            let (data, _) = try await URLSession.shared.data(from: url)
+
+            // Save data to cache
+            do {
+                try data.write(to: cacheFileURL)
+            } catch {
+                print("Error while caching: \(error)")
+            }
+
+            return data
+        }
     }
     
     static func getVocab(url: String) async -> [(String, String)] {
