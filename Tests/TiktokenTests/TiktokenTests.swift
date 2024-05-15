@@ -27,4 +27,11 @@ final class TiktokenTests: XCTestCase {
         let output = try XCTUnwrap(encoder?.encode(value: input))
         XCTAssertEqual(output, expected)
     }
+
+    func testGivenGPT4oEncodeAndDecode() async throws {
+        let input = "hello world"
+        let encoder = try await sut.getEncoding("gpt-4o")
+        let output = try XCTUnwrap(encoder?.encode(value: input))
+        XCTAssertEqual(encoder?.decode(value: output), input)
+    }
 }
