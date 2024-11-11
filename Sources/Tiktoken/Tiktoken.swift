@@ -6,7 +6,7 @@ public actor Tiktoken {
 
     private init() {}
 
-    public var cachedEncoders: [String: Encoding] = [:]
+    private(set) var cachedEncoders: [String: Encoding] = [:]
 
     public func getEncoding(_ name: String) async throws -> Encoding? {
         if let current = cachedEncoders[name] { return current }
